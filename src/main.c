@@ -10,7 +10,7 @@
 #include "app_storage.h"
 
 //  ========== defines =====================================================================
-#define STACK_SIZE 					1024
+#define STACK_SIZE 					4096
 #define ADC_THREAD_PRIORITY 		2
 #define STORAGE_THREAD_PRIORITY		3
 RING_BUF_DECLARE(adc_ringbuf, BUFFER_SIZE_SAMPLES * SAMPLE_SIZE_BYTES);
@@ -35,7 +35,7 @@ int8_t main(void)
 	printk("Geophone Acquisition Example\n");
 	
     // start threads
-     k_thread_create(&adc_thread_data, adc_stack, STACK_SIZE,
+    k_thread_create(&adc_thread_data, adc_stack, STACK_SIZE,
                     (k_thread_entry_t)app_nrf52_adc_thread, NULL, NULL, NULL,
                     ADC_THREAD_PRIORITY, 0, K_NO_WAIT);
 
@@ -43,5 +43,8 @@ int8_t main(void)
                     (k_thread_entry_t)app_storage_thread, NULL, NULL, NULL,
                     STORAGE_THREAD_PRIORITY, 0, K_NO_WAIT);
 
+	while (1) {
+        k_sleep(K_SECONDS(1));
+	}
 	return 0;
 }

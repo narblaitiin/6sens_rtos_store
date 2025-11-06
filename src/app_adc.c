@@ -62,11 +62,11 @@ int16_t app_nrf52_adc_get()
 	    return 0;
     }
 
-    printk("raw adc value: %d\n", buf);
+    //printk("raw adc value: %d\n", buf);
 
     // convert the raw ADC reading into a voltage value (in millivolts)
     velocity = (buf * ADC_REFERENCE_VOLTAGE) / ADC_RESOLUTION;
-    printk("velocity: %d mV\n", velocity);
+    //printk("velocity: %d mV\n", velocity);
     return (int16_t)velocity;
 }
 
@@ -80,7 +80,7 @@ void app_nrf52_adc_thread(void *a, void *b, void *c)
 
         uint32_t written = ring_buf_put(&adc_ringbuf, (uint8_t *)&sample, sizeof(sample));
            if (written < sizeof(sample)) {
-            printk("Ring buffer full, dropping sample");
+            //printk("ring buffer full, dropping sample\n");
         }
 
         next += SAMPLE_RATE_MS;

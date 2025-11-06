@@ -9,20 +9,21 @@
 #include "app_storage.h"
 
 //  ========== globals =====================================================================
-FS_LITTLEFS_DECLARE_DEFAULT_CONFIG(storage_partition_lfs);
-static struct fs_mount_t lfs_storage_mount = {
+FS_LITTLEFS_DECLARE_DEFAULT_CONFIG(lfs_storage);
+
+static struct fs_mount_t lfs_storage_mnt = {
     .type = FS_LITTLEFS,
     .mnt_point = "/lfs",
-    .fs_data = &storage_partition_lfs,
-    .storage_dev = (void *)FIXED_PARTITION_ID(storage_partition_lfs),
+    .fs_data = &lfs_storage,
+    .storage_dev = (void *)FIXED_PARTITION_ID(lfs_storage),
 };
 
 //  ========== app_storage_thread ==========================================================
 void app_storage_thread(void *arg1, void *arg2, void *arg3)
 {
-    int rc = fs_mount(&lfs_mount);
+    int rc = fs_mount(&lfs_storage_mnt);
     if (rc < 0) {
-        printk("Mount failed (%d)", rc);
+        printk("mount failed (%d)", rc);
         return;
     }
 
@@ -35,7 +36,7 @@ void app_storage_thread(void *arg1, void *arg2, void *arg3)
 
     rc = fs_open(&file, file_path, FS_O_CREATE | FS_O_WRITE | FS_O_APPEND);
     if (rc < 0) {
-        printk("File open failed (%d)", rc);
+        printk("file open failed (%d)", rc);
         return;
     }
 
@@ -46,11 +47,13 @@ void app_storage_thread(void *arg1, void *arg2, void *arg3)
         // pull data from ring buffer
         uint32_t len = ring_buf_get(&adc_ringbuf, buf, sizeof(buf));
         if (len > 0) {
+            printk("writing %u bytes\n", len);
             rc = fs_write(&file, buf, len);
             if (rc < 0) {
                 printk("flash write error (%d)", rc);
             } else {
                 current_file_size += len;
+                printk("current size: %zu / %d\n", current_file_size, MAX_FILE_SIZE);
             }
 
             // rotate file if max size reached

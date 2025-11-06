@@ -15,29 +15,28 @@
 
 /* enable the corresponding ADC, with the correct configuration */
 &adc {
-	#address-cells = <1>;
-	#size-cells = <0>;
-	status = "okay";
+	#address-cells	= <1>;
+	#size-cells 	= <0>;
+	status			= "okay";
 	channel@0 {
-		reg = <0>;											/* channel 0 of the ADC */
-		zephyr,gain = "ADC_GAIN_1_6";						/* attenuated by 6 (x1/6) */
-		zephyr,reference = "ADC_REF_INTERNAL";				/* reference voltage +0.6 */
+		reg 					= <0>;	/* channel 0 of the ADC */
+		zephyr,gain				= "ADC_GAIN_1_6";	/* attenuated by 6 (x1/6) */
+		zephyr,reference		= "ADC_REF_INTERNAL";	/* reference voltage +0.6 */
 		zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;	/* 10us */
-		zephyr,input-positive = <NRF_SAADC_AIN0>;			/* P0.02 for nRF52xx */
-		zephyr,resolution = <12>;
+		zephyr,input-positive	= <NRF_SAADC_AIN0>;	/* P0.02 for nRF52xx */
+		zephyr,resolution		= <12>;
 	};
 };
 
 &mx25r64 {
 	partitions {
-		compatible = "fixed-partitions";
-		#address-cells = <1>;
-		#size-cells = <1>;
+		compatible		= "fixed-partitions";
+		#address-cells	= <1>;
+		#size-cells		= <1>;
 
-		storage_partition_lfs: partition@0 {
-			label = "storage_lfs";
-			reg = <0x00000000 0x00800000>;
+		lfs_storage: partition@0 {
+			label	= "lfs_storage";
+			reg		= <0x00000000 0x00800000>;
 		};
 	};
 };
-
