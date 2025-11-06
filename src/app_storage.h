@@ -21,7 +21,7 @@
 //  ========== defines =====================================================================
 #define FILE_PREFIX             "/lfs/geophone"
 #define FILE_EXT                ".dat"
-#define MAX_FILE_SIZE           (512 * 1024)   // 512 KB per file (adjustable)
+#define MAX_FILE_SIZE           (64 * 1024)   // 512 KB per file (adjustable)
 #define STORAGE_BUFFER_SIZE     64
 
 //  ========== prototypes ==================================================================
