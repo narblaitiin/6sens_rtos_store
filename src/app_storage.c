@@ -47,13 +47,13 @@ void app_storage_thread(void *arg1, void *arg2, void *arg3)
         // pull data from ring buffer
         uint32_t len = ring_buf_get(&adc_ringbuf, buf, sizeof(buf));
         if (len > 0) {
-            printk("writing %u bytes\n", len);
+            //printk("writing %u bytes\n", len);
             rc = fs_write(&file, buf, len);
             if (rc < 0) {
                 printk("flash write error (%d)", rc);
             } else {
                 current_file_size += len;
-                printk("current size: %zu / %d\n", current_file_size, MAX_FILE_SIZE);
+                //printk("current size: %zu / %d\n", current_file_size, MAX_FILE_SIZE);
             }
 
             // rotate file if max size reached
