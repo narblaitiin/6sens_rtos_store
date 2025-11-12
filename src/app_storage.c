@@ -8,6 +8,8 @@
 //  ========== includes ====================================================================
 #include "app_storage.h"
 
+#define TEST_PARTITION_OFFSET	FIXED_PARTITION_OFFSET(lfs_storage)
+
 //  ========== globals =====================================================================
 FS_LITTLEFS_DECLARE_DEFAULT_CONFIG(lfs_storage);
 
@@ -23,11 +25,11 @@ void app_storage_thread(void *arg1, void *arg2, void *arg3)
 {
     int rc = fs_mount(&lfs_storage_mnt);
     if (rc < 0) {
-        printk("mount failed (%d)", rc);
+        printk("mount failed. error: %d\n", rc);
         return;
     }
 
-    struct fs_file_t file;
+    struct fs_file_t file;\n
     fs_file_t_init(&file);
 
     static int file_index = 0;
@@ -36,9 +38,10 @@ void app_storage_thread(void *arg1, void *arg2, void *arg3)
 
     rc = fs_open(&file, file_path, FS_O_CREATE | FS_O_WRITE | FS_O_APPEND);
     if (rc < 0) {
-        printk("file open failed (%d)", rc);
+        printk("file open failed. error: %d\n", rc);
         return;
     }
+    // printf("\npartition address beginning: flash erase page at 0x%x\n", TEST_PARTITION_OFFSET);
 
     size_t current_file_size = fs_tell(&file);
     uint8_t buf[STORAGE_BUFFER_SIZE];
@@ -50,7 +53,7 @@ void app_storage_thread(void *arg1, void *arg2, void *arg3)
             //printk("writing %u bytes\n", len);
             rc = fs_write(&file, buf, len);
             if (rc < 0) {
-                printk("flash write error (%d)", rc);
+                printk("flash write failed. error: %d\n", rc);
             } else {
                 current_file_size += len;
                 //printk("current size: %zu / %d\n", current_file_size, MAX_FILE_SIZE);
@@ -64,11 +67,11 @@ void app_storage_thread(void *arg1, void *arg2, void *arg3)
                 fs_file_t_init(&file);
                 rc = fs_open(&file, file_path, FS_O_CREATE | FS_O_WRITE | FS_O_APPEND);
                 if (rc < 0) {
-                    printk("failed to open new file (%d)", rc);
+                    printk("failed to open new file. error: %d\n", rc);
                     return;
                 }
                 current_file_size = 0;
-                printk("rotated to new file: %s", file_path);
+                printk("rotated to new file: %s\n", file_path);
             }
         } else {
             k_sleep(K_MSEC(5));

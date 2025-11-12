@@ -16,8 +16,14 @@
 #include <zephyr/sys/ring_buffer.h> 
 
 //  ========== defines =====================================================================
-#define ADC_REFERENCE_VOLTAGE       3300    // 3.3V reference voltage of the board
-#define ADC_RESOLUTION              4096    // 12-bit resolution
+// ADC characteristics (nRF52 SAADC)
+#define ADC_REF_INTERNAL_MV         600     // 0.6 V internal reference
+#define ADC_GAIN                    6       // using ADC_GAIN_1_6 -> 1/6
+#define ADC_RESOLUTION              4096    // 12-bit
+
+// effective full-scale voltage in mV
+#define ADC_FULL_SCALE_MV   ((ADC_REF_INTERNAL_MV * ADC_GAIN))  // 3600 mV full scale
+
 #define SAMPLE_RATE_MS              10
 #define BUFFER_SIZE_SAMPLES         512
 #define SAMPLE_SIZE_BYTES           sizeof(int16_t)
