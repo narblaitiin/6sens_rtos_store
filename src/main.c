@@ -40,7 +40,7 @@ int main(void)
         printk("mount failed. stopping application: %d\n", rc);
         return rc;
     }
-	int clean_fs = true;
+	int clean_fs = false;
 	// Dump the content of /lfs filesystem
 	dump_fs(clean_fs);
     // start threads
