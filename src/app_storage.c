@@ -29,7 +29,7 @@ void app_storage_thread(void *arg1, void *arg2, void *arg3)
         return;
     }
 
-    struct fs_file_t file;\n
+    struct fs_file_t file;
     fs_file_t_init(&file);
 
     static int file_index = 0;
@@ -71,7 +71,7 @@ void app_storage_thread(void *arg1, void *arg2, void *arg3)
                     return;
                 }
                 current_file_size = 0;
-                printk("rotated to new file: %s\n", file_path);
+                // printk("rotated to new file: %s\n", file_path);
             }
         } else {
             k_sleep(K_MSEC(5));

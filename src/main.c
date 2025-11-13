@@ -8,6 +8,7 @@
 //  ========== includes ====================================================================
 #include "app_adc.h"
 #include "app_storage.h"
+#include "app_download.h"
 
 //  ========== defines =====================================================================
 #define STACK_SIZE 					4096
@@ -43,8 +44,11 @@ int8_t main(void)
                     (k_thread_entry_t)app_storage_thread, NULL, NULL, NULL,
                     STORAGE_THREAD_PRIORITY, 0, K_NO_WAIT);
 
+	setup_download();
+
 	while (1) {
-        k_sleep(K_SECONDS(1));
+        k_sleep(K_SECONDS(5));
+		printk("Alive\n");
 	}
 	return 0;
 }
