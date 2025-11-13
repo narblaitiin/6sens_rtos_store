@@ -4,47 +4,53 @@
  * Univ Lyon, INSA Lyon, Inria, CITI, EA3720
  * SPDX-License-Identifier: Apache-2.0
  */
-#include "app_download.h"
+#include "fs_utils.h"
 #include <zephyr/sys/base64.h>
+
 //  ========== globals =====================================================================
-char ram_buffer[DOWNLOAD_RAM_BUF_SIZE];
+#define TEST_PARTITION_OFFSET	FIXED_PARTITION_OFFSET(lfs_storage)
 
-//  ========== setup_download() ============================================================
-void setup_download()
-{
-    int not_found = 1;
+//  ========== globals =====================================================================
+FS_LITTLEFS_DECLARE_DEFAULT_CONFIG(lfs_storage);
+
+static struct fs_mount_t lfs_storage_mnt = {
+    .type = FS_LITTLEFS,
+    .mnt_point = "/lfs",
+    .fs_data = &lfs_storage,
+    .storage_dev = (void *)FIXED_PARTITION_ID(lfs_storage),
+};
+
+//  ========== mount_lfs() ============================================================
+int mount_lfs() {
+    return fs_mount(&lfs_storage_mnt);
+}
+
+//  ========== is_lfs_mounted() ============================================================
+bool is_lfs_mounted() {
+    int mount_index = 0;
+    char name[30];
     int rc = 0;
-
-    // Check if flash has been mounted
-    while (not_found)
+    while (rc == 0)
     {
-        int mount_index = 0;
-        char name[30];
-        char *new_name = name;
-        rc = 0;
-        while (rc == 0)
+        rc = fs_readmount(&mount_index, (const char * *) &name);
+        if (strcmp(name, "/lfs") == 0)
         {
-            rc = fs_readmount(&mount_index, &new_name);
-            if (new_name[0] != 0)
-            {
-                printk("Found mount : %s\n", new_name);
-            }
-            if (new_name[0] == '/' && new_name[1] == 'l' && new_name[2] == 'f' && new_name[3] == 's')
-            {
-                printk("LFS mount is here !\n");
-                not_found = 0;
-            }
-        }
-        if (not_found)
-        {
-            printk("LFS mount not found,  sleeping...\n");
-            k_sleep(K_SECONDS(1));
+            return true;
         }
     }
+    return false; 
+}
 
+//  ========== dump_fs() ============================================================
+void dump_fs(bool clean)
+{
+    if(!is_lfs_mounted()) {
+        mount_lfs();
+    }
     // Get the lfs folder
     struct fs_dir_t root_dir;
     fs_dir_t_init(&root_dir);
+    int rc = 0;
     rc = fs_opendir(&root_dir, "/lfs");
     switch (rc)
     {
@@ -52,10 +58,10 @@ void setup_download()
         printk("Bad directory given...\n");
         break;
     case 0:
-        printk("Opened root folder\n");
-    default:
         break;
+    default:
         printk("Error : error code=%d\n", rc);
+        break;
     }
 
     printk("Reading content of lfs dir\n");
@@ -69,19 +75,27 @@ void setup_download()
         }
         printk("FILE:%s\n", dir_entry.name);
         
-        char file_path[32];
+        char file_path[261];
         snprintf(file_path, sizeof(file_path), "%s%s", "/lfs/", dir_entry.name);
 
         dump_file(file_path);
-        printk("File dumped !\n");
+        if(clean) {
+            rc = fs_unlink(file_path);
+            if (rc < 0)
+            {
+                printk("Could not delete %s. error: %d\n", file_path, rc);
+            }
+        }
     }
+    printk("DUMP_END\n");
 }
 
+//  ========== dump_file() ============================================================
 void dump_file(char * file_path)
 {   
     int rc;
-    char * buffer[100] = {0};
-    char * base64_encoded[200] = {0};
+    unsigned char buffer[100];
+    unsigned char base64_encoded[200];
     // printf("Opening file %s\n", file_path);
     struct fs_file_t file;
     fs_file_t_init(&file);
@@ -104,13 +118,13 @@ void dump_file(char * file_path)
             printf("Error encoding to base 64\n");
             return;
         }
-        printk(base64_encoded);
+        printk("%s", base64_encoded);
         total_encoded += encoded;
         printk("\n");
         k_sleep(K_MSEC(15));
     }
 
-    printk("TOTAL_ENCODED:%d", total_encoded);
+    printk("TOTAL_ENCODED:%d\n", total_encoded);
     
     rc = fs_close(&file);
     if (rc < 0)
