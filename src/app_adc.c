@@ -29,7 +29,7 @@ int8_t app_nrf52_adc_init()
 
     // verify if the ADC is ready for operation
     if (!adc_is_ready_dt(&adc_channel)) {
-		printk("ADC is not ready. error: %d\n", ret);
+		printk("ADC is not ready\n");
 		return 0;
     }
     

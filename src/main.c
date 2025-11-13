@@ -8,6 +8,7 @@
 //  ========== includes ====================================================================
 #include "app_adc.h"
 #include "app_storage.h"
+#include "fs_utils.h"
 
 //  ========== defines =====================================================================
 #define STACK_SIZE 					4096
@@ -23,8 +24,8 @@ static struct k_thread adc_thread_data;
 static struct k_thread storage_thread_data;
 
 // ========== main =========================================================================
-int8_t main(void)
-{
+int main(void)
+{	
 	// initialize ADC device
 	int8_t ret = app_nrf52_adc_init();
 	if (ret != 1) {
@@ -34,6 +35,14 @@ int8_t main(void)
 
 	printk("Geophone Acquisition Example\n");
 	
+	int rc = mount_lfs();
+	if (rc < 0) {
+        printk("mount failed. stopping application: %d\n", rc);
+        return rc;
+    }
+	int clean_fs = false;
+	// Dump the content of /lfs filesystem
+	dump_fs(clean_fs);
     // start threads
     k_thread_create(&adc_thread_data, adc_stack, STACK_SIZE,
                     (k_thread_entry_t)app_nrf52_adc_thread, NULL, NULL, NULL,
@@ -44,7 +53,7 @@ int8_t main(void)
                     STORAGE_THREAD_PRIORITY, 0, K_NO_WAIT);
 
 	while (1) {
-        k_sleep(K_SECONDS(1));
+        k_sleep(K_SECONDS(5));
 	}
 	return 0;
 }

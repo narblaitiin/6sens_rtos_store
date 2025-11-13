@@ -8,34 +8,17 @@
 //  ========== includes ====================================================================
 #include "app_storage.h"
 
-#define TEST_PARTITION_OFFSET	FIXED_PARTITION_OFFSET(lfs_storage)
-
-//  ========== globals =====================================================================
-FS_LITTLEFS_DECLARE_DEFAULT_CONFIG(lfs_storage);
-
-static struct fs_mount_t lfs_storage_mnt = {
-    .type = FS_LITTLEFS,
-    .mnt_point = "/lfs",
-    .fs_data = &lfs_storage,
-    .storage_dev = (void *)FIXED_PARTITION_ID(lfs_storage),
-};
-
 //  ========== app_storage_thread ==========================================================
 void app_storage_thread(void *arg1, void *arg2, void *arg3)
 {
-    int rc = fs_mount(&lfs_storage_mnt);
-    if (rc < 0) {
-        printk("mount failed. error: %d\n", rc);
-        return;
-    }
-
-    struct fs_file_t file;\n
+    struct fs_file_t file;
     fs_file_t_init(&file);
 
     static int file_index = 0;
     char file_path[32];
     snprintf(file_path, sizeof(file_path), "%s_%03d%s", FILE_PREFIX, file_index, FILE_EXT);
 
+    int rc;    
     rc = fs_open(&file, file_path, FS_O_CREATE | FS_O_WRITE | FS_O_APPEND);
     if (rc < 0) {
         printk("file open failed. error: %d\n", rc);
